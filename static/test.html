@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auto-Reload on Connection Failure</title>
+</head>
+<body>
+<p>Hello World!</p>
+<script>
+    function checkConnection(url, maxRetries = 3, retryInterval = 5000) {
+        const attemptConnection = async () => {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                
+                if (response.ok) {
+                    console.log('Connection successful!');
+                } else {
+                    console.log('Connection failed. Retrying...');
+                    setTimeout(attemptConnection, retryInterval);
+                }
+            } catch (error) {
+                console.error('Error during connection attempt:', error);
+                if (maxRetries > 0) {
+                    console.log(`Retrying in ${retryInterval / 1000} seconds...`);
+                    setTimeout(attemptConnection, retryInterval);
+                    maxRetries--;
+                } else {
+                    console.error('Max retries reached. Unable to establish connection.');
+                }
+            }
+        };
+
+        // Initial connection attempt
+        attemptConnection();
+
+        // Set up periodic connection checks every 5 seconds
+        setInterval(attemptConnection, retryInterval);
+    }
+
+    // Example usage
+    const urlToCheck = 'http://127.0.0.1:8080';
+
+    // Call the function with the URL to check and optional parameters for retries
+    checkConnection(urlToCheck, 5);
+</script>
+
+</body>
+</html>
+
