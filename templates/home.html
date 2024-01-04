@@ -1,28 +1,9 @@
 <html>
     <head>
         <title>Timelapse Cam</title>
-        <script> 
-            function reloadPage() {
-                console.log("Hello world!");
-                alert("An error occurred while loading image");
-                location.reload();
-            }
-            function reload(url, delay) {
-                url = url || '/';
-                delay = delay || 10;
-              
-                var req = new XMLHttpRequest();
-              
-                req.onload = window.location.reload.bind(window.location);
-                req.onerror = setTimeout.bind(null, reload.bind(null, url, delay), delay);
-              
-                req.open('head', url, true);
-                req.send();
-              }
-        </script>
     </head>
-    <body onpageshow="reload()">
+    <body >
         <h1>Timelapse Cam - Live View</h1>
-        <img src="{{ url_for('video_feed') }}" onerror="reloadPage()" onstalled="reloadPage()" onsuspend="reloadPage()">
+        <img src="{{ url_for('video_feed') }}">
     </body>
 </html>

@@ -1,13 +1,13 @@
  # rpi_camera.py
 
 import io
-import picamera
+import picamera2
 from PIL import Image
 from base_camera import BaseCamera
 
 class RpiCamera(BaseCamera):
     def __init__(self, resolution=(640, 480)):
-        self.camera_instance = picamera.PiCamera()
+        self.camera_instance = picamera2.PiCamera()
         self.camera_instance.resolution = resolution
 
     def capture_frame(self):
