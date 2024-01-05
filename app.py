@@ -1,43 +1,23 @@
 from flask import Flask, render_template, Response
-from flask_cors import CORS, cross_origin
-from picamera2 import Picamera2
-from picamera2.outputs import FileOutput 
-from picamera2.encoders import MJPEGEncoder, JpegEncoder
+from flask_cors import CORS
 import io
 import serial
-from threading import Condition
+from rpi_camera import RpiCamera
+
 
 app = Flask(__name__)
 cors = CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 
-camera = Picamera2()
-config = camera.create_video_configuration(main={"size": (1536, 864)}, raw=camera.sensor_modes[1])
-camera.configure(config)
-camera.start()
+camera = RpiCamera()
 
 # serial_port = serial.Serial("/dev/ttyACM0", 9600)  # Replace with your serial port
 # serial_data = b""
 
-class StreamingOutput(io.BufferedIOBase):
-	def __init__(self):
-		self.frame = None
-		self.condition = Condition()
-
-	def write(self, buf):
-		with self.condition:
-			self.frame = buf
-			self.condition.notify_all()
-		
-
 def gen_frames():
-    output = StreamingOutput()
-    camera.start_recording(JpegEncoder(), FileOutput(output))
     
     while True:
-        with output.condition:
-            output.condition.wait()
-            frame = output.frame
+        frame = camera.capture_frame()
         yield (b'--frame\r\n'
             b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
     

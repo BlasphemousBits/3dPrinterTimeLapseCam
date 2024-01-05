@@ -1,20 +1,35 @@
  # rpi_camera.py
 
 import io
-import picamera2
-from PIL import Image
-from base_camera import BaseCamera
+from threading import Condition
+from picamera2 import Picamera2
+from picamera2.outputs import FileOutput 
+from picamera2.encoders import  JpegEncoder
 
-class RpiCamera(BaseCamera):
-    def __init__(self, resolution=(640, 480)):
-        self.camera_instance = picamera2.PiCamera()
-        self.camera_instance.resolution = resolution
+class StreamingOutput(io.BufferedIOBase):
+	def __init__(self):
+		self.frame = None
+		self.condition = Condition()
+
+	def write(self, buf):
+		with self.condition:
+			self.frame = buf
+			self.condition.notify_all()
+
+class RpiCamera():
+    def __init__(self):
+        self.camera = Picamera2()
+        config = self.camera.create_video_configuration(main={"size": (1536, 864)}, raw=self.camera.sensor_modes[1])
+        self.camera.configure(config)
+        self.camera.start()
+        self.output = StreamingOutput()
+        self.camera.start_recording(JpegEncoder(), FileOutput(self.output))
 
     def capture_frame(self):
-        frame_stream = io.BytesIO()
-        self.camera_instance.capture(frame_stream, format='jpeg', use_video_port=True)
-        frame_stream.seek(0)
-        return Image.open(frame_stream)
+         with self.output.condition:
+            self.output.condition.wait()
+            frame = self.output.frame
+            return frame
 
     def capture_still_image(self):
         self.camera_instance.capture('still_image.jpg')
