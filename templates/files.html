@@ -1,0 +1,13 @@
+<html>
+    <body>
+        <table>
+    {% for dir in directory %}
+    <tr>
+        <td> {{ dir.name }} </td>
+        <td> {{ dir.has_images() }}</td>
+        <td> <a href= {{ url_for('download_video', file=dir.name) }}>Download timelapse</a></td>
+    </tr>
+    {%endfor%}
+        </table>
+    </body>
+</html>
